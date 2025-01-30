@@ -6,6 +6,7 @@ const crypto = require('crypto');
 const FormData = require('form-data');
 const cors = require('cors');
 require('dotenv').config();
+const AfricasTalking = require('africastalking');
 
 const app = express();
 
@@ -16,6 +17,13 @@ const upload = multer({
     fileSize: 5 * 1024 * 1024 // 5MB limit
   }
 });
+
+//AT Credentials
+const credentials = {
+  apiKey: process.env.AT_API_KEY,
+  username: process.env.AT_USERNAME,
+};
+const sms = AfricasTalking(credentials).SMS;
 
 // Configure CORS
 app.use(cors({
@@ -95,5 +103,27 @@ app.post('/api/recognize', upload.single('audio'), async (req, res) => {
   }
 });
 
+// send sms
+app.post('/api/send-sms', async (req, res) => {
+  const { phoneNumber, message } = req.body;
+
+  if (!phoneNumber || !message) {
+    return res.status(400).json({ error: 'Phone number and message are required' });
+  }
+
+  try {
+    const result = await sms.send({
+      to: phoneNumber,
+      message: message,
+      from: process.env.AT_SENDER_ID  // Add your shortcode or senderId from Africa's Talking
+    });
+
+    res.json({ success: true, result });
+  } catch (error) {
+    console.error('SMS error:', error);
+    res.status(500).json({ error: error.message || 'Failed to send SMS' });
+  }
+});
+
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () => console.log(`Server running on port ${PORT}...`));
