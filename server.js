@@ -27,7 +27,7 @@ const sms = AfricasTalking(credentials).SMS;
 
 // Configure CORS
 app.use(cors({
-  origin: ['http://localhost:5173', 'http://localhost:3000'], // Add your frontend URL
+  origin: '*',
   methods: ['POST', 'GET', 'OPTIONS'],
   allowedHeaders: ['Content-Type']
 }));
